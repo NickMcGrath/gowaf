@@ -1,6 +1,6 @@
 # Go Lang WebAssembly Framework
 
-![Gopher image](https://raw.githubusercontent.com/egonelbre/gophers/10cc13c5e29555ec23f689dc985c157a8d4692ab/vector/projects/surfing-js.svg)
+![Gopher](https://raw.githubusercontent.com/egonelbre/gophers/10cc13c5e29555ec23f689dc985c157a8d4692ab/vector/projects/surfing-js.svg)
 *Image learning javascript*
 
 ## Diagram:
