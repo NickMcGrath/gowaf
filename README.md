@@ -1,4 +1,5 @@
 #Go Lang WebAssembly Framework
+![Gopher image](https://raw.githubusercontent.com/egonelbre/gophers/10cc13c5e29555ec23f689dc985c157a8d4692ab/vector/projects/surfing-js.svg)
 *Image learning javascript*
 
 ##Diagram:
@@ -10,6 +11,5 @@
 ##compiling go to wasm:
 ###Setting Go environment:
 go env -w GOOS=js GOARCH=wasm
-GOARCH=amd64, GOOS=windows
 ###Compiling:
 go build -o main.wasm
