@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"syscall/js"
 	"time"
 )
 
 type nodeWrapper struct {
-	node       *js.Value
-	nodeString string
+	node *js.Value
 }
 
 func (n *nodeWrapper) getNode() *js.Value {
@@ -18,6 +16,8 @@ func (n *nodeWrapper) getNode() *js.Value {
 func (n *nodeWrapper) setNode(node *js.Value) {
 	n.node = node
 }
+
+//todo make newNode that takes parent node (not string but component)
 func (n *nodeWrapper) newNode(nodeType string, parentId string) {
 	dom := js.Global().Get("document")
 	newElement := dom.Call("createElement", nodeType)
@@ -25,12 +25,17 @@ func (n *nodeWrapper) newNode(nodeType string, parentId string) {
 	body.Call("appendChild", newElement)
 	n.node = &newElement
 }
-func (n *nodeWrapper) setInnerHTML(innerHTML ...string) {
-	n.nodeString = strings.Join(innerHTML, "")
-	n.node.Set("innerHTML", strings.Join(innerHTML, ""))
+func (n *nodeWrapper) setInnerHTML(innerHTML ...interface{ String() string }) {
+	innerHTMLStr := ""
+	for _, str := range innerHTML {
+		innerHTMLStr += str.String()
+	}
+	//n.node.Set("innerHTML", strings.Join(innerHTML, ""))
+	n.node.Set("innerHTML", innerHTMLStr)
+
 }
 func (n *nodeWrapper) String() string {
-	return n.nodeString
+	return n.node.Get("innerHTML").String()
 }
 
 //NodePackFactory gives NodePack the functions needed
@@ -54,10 +59,10 @@ type myComponent struct {
 
 func (myc *myComponent) Render() {
 	fmt.Println("<h1>", myc.title, "</h2>",
-		"<p>", myc.data, "</p>", myc.myOtherComponent.nodeWrap.String())
+		"<p>", myc.data, "</p>", myc.myOtherComponent.nodeWrap)
 
 	myc.nodeWrap.setInnerHTML("<h1>", myc.title, "</h2>",
-		"<p>", myc.data, "</p>", myc.myOtherComponent.nodeWrap.String())
+		"<p>", myc.data, "</p>", myc.myOtherComponent.nodeWrap)
 }
 
 type myOtherComponent struct {
