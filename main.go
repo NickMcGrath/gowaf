@@ -1,96 +1,40 @@
 package main
 
 import (
-	"fmt"
-	"syscall/js"
+	"github.com/nickmcgrath/gowaf/example/components"
+	"github.com/nickmcgrath/gowaf/nf"
 	"time"
 )
 
-type nodeWrapper struct {
-	node *js.Value
-}
-
-func (n *nodeWrapper) getNode() *js.Value {
-	return n.node
-}
-func (n *nodeWrapper) setNode(node *js.Value) {
-	n.node = node
-}
-
-//todo make newNode that takes parent node (not string but component)
-func (n *nodeWrapper) newNode(nodeType string, parentId string) {
-	dom := js.Global().Get("document")
-	newElement := dom.Call("createElement", nodeType)
-	body := dom.Call("getElementById", parentId)
-	body.Call("appendChild", newElement)
-	n.node = &newElement
-}
-func (n *nodeWrapper) setInnerHTML(innerHTML ...interface{ String() string }) {
-	innerHTMLStr := ""
-	for _, str := range innerHTML {
-		innerHTMLStr += str.String()
-	}
-	//n.node.Set("innerHTML", strings.Join(innerHTML, ""))
-	n.node.Set("innerHTML", innerHTMLStr)
-
-}
-func (n *nodeWrapper) String() string {
-	return n.node.Get("innerHTML").String()
-}
-
-//NodePackFactory gives NodePack the functions needed
-type NodePackFactory struct {
-}
-
-func (nf *NodePackFactory) newNode(nodeType string, parentId string) *nodeWrapper {
-	var nw nodeWrapper
-	nw.newNode(nodeType, parentId)
-	return &nw
-}
-
-//MyComponent is an example of a users class.
-//They can do what ever they want and when ever they want to render they call nodePack.SetNode()
-type myComponent struct {
-	nodeWrap         *nodeWrapper
-	title            string
-	data             string
-	myOtherComponent myOtherComponent
-}
-
-func (myc *myComponent) Render() {
-	fmt.Println("<h1>", myc.title, "</h2>",
-		"<p>", myc.data, "</p>", myc.myOtherComponent.nodeWrap)
-
-	myc.nodeWrap.setInnerHTML("<h1>", myc.title, "</h2>",
-		"<p>", myc.data, "</p>", myc.myOtherComponent.nodeWrap)
-}
-
-type myOtherComponent struct {
-	nodeWrap  *nodeWrapper
-	paragraph string
-}
-
-func (myc *myOtherComponent) Render() {
-	myc.nodeWrap.setInnerHTML("<h1>", myc.paragraph, "</h2>")
-}
-
 func testMyComponent() {
-	var nf NodePackFactory
-	component2 := myOtherComponent{nodeWrap: nf.newNode("div", "bodyId"), paragraph: "my paragraph"}
-	component2.Render()
-	component2.paragraph = "yolo"
+	component2 := components.MyOtherComponent{NodeWrap: nf.NewNode("div"), Paragraph: "my component"}
+	component2.NodeWrap.Compose = func() {
+		component2.NodeWrap.SetInnerHTML("<h1>", component2.Paragraph, "</h2>")
+	}
 
-	component := myComponent{
-		title:            "my component title",
-		data:             "my data",
-		nodeWrap:         nf.newNode("div", "bodyId"),
-		myOtherComponent: component2}
+	component3 := components.MyOtherComponent2{NodeWrap: nf.NewNode("div"), Paragraph: "my component 2"}
+	component3.NodeWrap.Compose = func() {
+		component3.NodeWrap.SetInnerHTML("<h1>", component3.Paragraph, "</h2>")
+	}
+	component3.Render()
 
+	component := components.MyComponent{
+		Title:             "my component title",
+		Data:              "my data",
+		NodeWrap:          nf.NewNodeFromParentId("div", "bodyId"),
+		MyOtherComponent:  component2,
+		MyOtherComponent2: component3}
+
+	component2.MyParent = &component
+	component3.MyParent = &component
 	component.Render()
-	component.title = "new title"
-	component.data = "new data"
+
+	component2.Paragraph = "new paragraph"
 	time.Sleep(2 * time.Second)
 	component2.Render()
+	time.Sleep(2 * time.Second)
+	component.Title = "new title"
+	component.Data = "new data"
 	component.Render()
 }
 
