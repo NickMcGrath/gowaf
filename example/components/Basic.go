@@ -2,46 +2,65 @@ package components
 
 import (
 	"fmt"
+	"github.com/nickmcgrath/gowaf/nf"
 	"github.com/nickmcgrath/gowaf/wraps"
 	"syscall/js"
 )
 
-//MyComponent is an example of a users class.
-//They can do what ever they want and when ever they want to render they call nodePack.SetNode()
-type Component struct {
+type ComponentProperties struct {
 	NodeWrap *wraps.NodeWrapper
 	//Title      string
 	//Data       string
 	childNodes []*wraps.NodeWrapper
+	Render     func()
 }
 
-func (myc *MyComponent) Render() {
-	fmt.Println("<h1>", myc.Title, "</h2>",
-		"<p>", myc.Data, "</p>", myc.MyOtherComponent.NodeWrap)
-
-	myc.NodeWrap.SetInnerHTML("<h1>", myc.Title, "</h2>",
-		"<p>", myc.Data, "</p>", myc.MyOtherComponent.NodeWrap.String(), myc.MyOtherComponent2.NodeWrap.String())
+type MyComponent struct {
+	Properties *ComponentProperties
+	Title      string
+	Data       string
 }
 
-//Child
-type MyOtherComponent struct {
-	NodeWrap  *wraps.NodeWrapper
-	Paragraph string
+type ChildComponent struct {
+	Properties *ComponentProperties
+	Title      string
 }
 
-func (myc *MyOtherComponent) Render() {
-	myc.NodeWrap.Compose()
-	body := js.Global().Get("document").Call("ElementById", "bodyId")
-	body.Call("appendChild", myc.NodeWrap.GetNode())
-	//myc.NodeWrap.SetInnerHTML("<h1>", myc.Paragraph, "</h2>")
+func CreateMyComponent(titl string, dat string, children ...*wraps.NodeWrapper) *MyComponent {
+	node := nf.NewNode("div")
+	component := MyComponent{nil, titl, dat}
+	node.Compose = func() {
+		node.SetInnerHTML("<loltag>", component.Title, "</loltag>")
+	}
+	renderFunc := func() {
+		node.Compose()
+		body := js.Global().Get("document").Call("getElementById", "bodyId")
+		body.Call("appendChild", *node.GetNode())
+		for _, child := range children {
+			child.Compose()
+			fmt.Println(child.String())
+			fmt.Println(node.String())
+			(*node.GetNode()).Call("appendChild", child.GetNode())
+		}
+	}
+	props := ComponentProperties{node, children, renderFunc}
+
+	component.Properties = &props
+	return &component
 }
 
-//Child
-type MyOtherComponent2 struct {
-	NodeWrap  *wraps.NodeWrapper
-	Paragraph string
-}
+func CreateChildComponent(title string) *ChildComponent {
+	node := nf.NewNode("div")
+	component := ChildComponent{nil, title}
+	node.Compose = func() {
+		node.SetInnerHTML("<h2>", component.Title, "</h2>")
+	}
+	props := ComponentProperties{node, nil, func() {
+		node.SetInnerHTML("<h2>", component.Title, "</h2>")
+		//body := js.Global().Get("document").Call("getElementById", "bodyId")
+		//body.Call("appendChild", *node.GetNode())
+	}}
 
-func (myc *MyOtherComponent2) Render() {
-	myc.NodeWrap.SetInnerHTML("<h1>", myc.Paragraph, "</h2>")
+	component.Properties = &props
+	return &component
 }
