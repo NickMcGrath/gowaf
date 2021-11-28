@@ -8,8 +8,7 @@ import (
 // values we can get from a node: https://www.w3schools.com/jsref/dom_obj_all.asp
 
 type NodeWrapper struct {
-	node    *js.Value
-	Compose func()
+	node *js.Value
 }
 
 func (n *NodeWrapper) GetNode() *js.Value {

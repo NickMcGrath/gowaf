@@ -8,14 +8,9 @@ import (
 
 func testMyComponent() {
 	component2 := components.MyOtherComponent{NodeWrap: nf.NewNode("div"), Paragraph: "my component"}
-	component2.NodeWrap.Compose = func() {
-		component2.NodeWrap.SetInnerHTML("<h1>", component2.Paragraph, "</h2>")
-	}
+	component2.Render()
 
 	component3 := components.MyOtherComponent2{NodeWrap: nf.NewNode("div"), Paragraph: "my component 2"}
-	component3.NodeWrap.Compose = func() {
-		component3.NodeWrap.SetInnerHTML("<h1>", component3.Paragraph, "</h2>")
-	}
 	component3.Render()
 
 	component := components.MyComponent{
@@ -25,8 +20,6 @@ func testMyComponent() {
 		MyOtherComponent:  component2,
 		MyOtherComponent2: component3}
 
-	component2.MyParent = &component
-	component3.MyParent = &component
 	component.Render()
 
 	component2.Paragraph = "new paragraph"

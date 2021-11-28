@@ -3,16 +3,16 @@ package components
 import (
 	"fmt"
 	"github.com/nickmcgrath/gowaf/wraps"
-	"syscall/js"
 )
 
 //MyComponent is an example of a users class.
 //They can do what ever they want and when ever they want to render they call nodePack.SetNode()
-type Component struct {
-	NodeWrap *wraps.NodeWrapper
-	//Title      string
-	//Data       string
-	childNodes []*wraps.NodeWrapper
+type MyComponent struct {
+	NodeWrap          *wraps.NodeWrapper
+	Title             string
+	Data              string
+	MyOtherComponent  MyOtherComponent
+	MyOtherComponent2 MyOtherComponent2
 }
 
 func (myc *MyComponent) Render() {
@@ -30,10 +30,7 @@ type MyOtherComponent struct {
 }
 
 func (myc *MyOtherComponent) Render() {
-	myc.NodeWrap.Compose()
-	body := js.Global().Get("document").Call("ElementById", "bodyId")
-	body.Call("appendChild", myc.NodeWrap.GetNode())
-	//myc.NodeWrap.SetInnerHTML("<h1>", myc.Paragraph, "</h2>")
+	myc.NodeWrap.SetInnerHTML("<h1>", myc.Paragraph, "</h2>")
 }
 
 //Child
