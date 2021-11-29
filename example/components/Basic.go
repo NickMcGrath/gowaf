@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"github.com/nickmcgrath/gowaf/wraps"
 )
 
@@ -11,16 +10,19 @@ type MyComponent struct {
 	NodeWrap          *wraps.NodeWrapper
 	Title             string
 	Data              string
-	MyOtherComponent  MyOtherComponent
-	MyOtherComponent2 MyOtherComponent2
+	Integer           int
+	MyOtherComponent  *MyOtherComponent
+	MyOtherComponent2 *MyOtherComponent2
 }
 
-func (myc *MyComponent) Render() {
-	fmt.Println("<h1>", myc.Title, "</h2>",
-		"<p>", myc.Data, "</p>", myc.MyOtherComponent.NodeWrap)
-
-	myc.NodeWrap.SetInnerHTML("<h1>", myc.Title, "</h2>",
-		"<p>", myc.Data, "</p>", myc.MyOtherComponent.NodeWrap.String(), myc.MyOtherComponent2.NodeWrap.String())
+func (myc *MyComponent) SetUp() {
+	//myc.NodeWrap.SetInnerHTML("<h1>", myc.Title, "</h2>", "<p>", myc.Data, "</p>")
+	myc.NodeWrap.SetTemplateAndValues("<h1>%v</h2><p>%v</p>", myc.Title, myc.Integer)
+	myc.NodeWrap.SetChildNode(myc.MyOtherComponent.NodeWrap)
+	myc.NodeWrap.SetChildNode(myc.MyOtherComponent2.NodeWrap)
+}
+func (myc *MyComponent) Update() {
+	myc.NodeWrap.UpdateValues(myc.Title, myc.Data)
 }
 
 //Child

@@ -1,14 +1,22 @@
 package wraps
 
 import (
+	"fmt"
 	"strings"
 	"syscall/js"
 )
 
 // values we can get from a node: https://www.w3schools.com/jsref/dom_obj_all.asp
 
+//type NodeTree struct {
+//	Head     *js.Value
+//	Children []NodeTree
+//	Values   []*interface{}
+//}
+
 type NodeWrapper struct {
-	node *js.Value
+	node     *js.Value
+	template string
 }
 
 func (n *NodeWrapper) GetNode() *js.Value {
@@ -45,19 +53,26 @@ func (n *NodeWrapper) NewNodeOfChildWrap(element string, child NodeWrapper) {
 	newElement.Call("appendChild", child.node)
 	n.node = &newElement
 }
-
-func (n *NodeWrapper) SetInnerHTML(innerHTML ...string) {
-	n.node.Set("innerHTML", strings.Join(innerHTML, ""))
+func (n *NodeWrapper) SetChildNode(child *NodeWrapper) {
+	n.node.Call("appendChild", child.GetNode())
 }
 
-//func (n *NodeWrapper) Compose(elements ...interface{}) {
-//	for element := range elements {
-//		switch reflect.TypeOf(element).Kind() {
-//		case reflect.TypeOf("").Kind():
-//			fmt.Println("string", element)
-//		}
-//	}
-//}
+func (n *NodeWrapper) SetInnerHTML(innerHTML ...interface{}) {
+	builder := strings.Builder{}
+	for _, v := range innerHTML {
+		builder.WriteString(fmt.Sprint(v))
+	}
+	n.node.Set("innerHTML", builder.String())
+}
+func (n *NodeWrapper) SetTemplateAndValues(innerTemplate string, values ...interface{}) {
+	n.template = innerTemplate
+	fmt.Println(fmt.Sprintf(innerTemplate, values...))
+	n.node.Set("innerHTML", fmt.Sprintf(innerTemplate, values...))
+}
+func (n *NodeWrapper) UpdateValues(values ...interface{}) {
+	fmt.Println(fmt.Sprintf(n.template, values...))
+	n.node.Get("firstElementChild").Set("innerHTML", fmt.Sprintf(n.template, values...))
+}
 
 func (n *NodeWrapper) String() string {
 	return n.node.Get("innerHTML").String()
